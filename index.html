@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memvel — Memory System for Modern Life</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #06060c;
+      --surface: #0e0e1a;
+      --surface2: #13131f;
+      --border: rgba(255,255,255,0.07);
+      --accent: #7c6dfa;
+      --accent2: #c084fc;
+      --accent3: #38bdf8;
+      --gold: #f5c842;
+      --text: #f0eeff;
+      --muted: rgba(240,238,255,0.45);
+      --glow: rgba(124,109,250,0.35);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Syne', sans-serif; }
+
+    /* Icon helper */
+    .icon { display: inline-flex; align-items: center; justify-content: center; }
+    .icon svg { display: block; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(6,6,12,0.75);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white !important;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      transition: opacity 0.2s, transform 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 140px 40px 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 900px; height: 900px;
+      background: radial-gradient(ellipse, rgba(124,109,250,0.18) 0%, rgba(192,132,252,0.10) 40%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -55%);
+      pointer-events: none;
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100%{ transform: translate(-50%,-55%) scale(1); opacity:1; }
+      50%{ transform: translate(-50%,-55%) scale(1.08); opacity:0.7; }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: 100px;
+      background: rgba(124,109,250,0.12);
+      border: 1px solid rgba(124,109,250,0.3);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 36px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent2);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .hero h1 {
+      font-size: clamp(52px, 7vw, 96px);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      margin-bottom: 28px;
+      animation: fadeUp 0.9s 0.1s ease both;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #c084fc 40%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .thin { font-weight: 400; color: var(--muted); }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.7;
+      margin-bottom: 52px;
+      font-weight: 300;
+      animation: fadeUp 0.9s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      animation: fadeUp 0.9s 0.3s ease both;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      padding: 16px 36px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 40px rgba(124,109,250,0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 60px rgba(124,109,250,0.6);
+    }
+
+    .btn-ghost {
+      color: var(--muted);
+      padding: 16px 28px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      border: 1px solid var(--border);
+      transition: color 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── PHONE MOCKUP ─── */
+    .phone-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 80px;
+      padding: 40px 80px 140px;
+      position: relative;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .phone-aside { flex: 1; max-width: 420px; }
+
+    .phone-aside-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 40px; font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 18px;
+    }
+
+    .phone-aside-sub {
+      font-size: 16px; color: var(--muted);
+      line-height: 1.7; margin-bottom: 36px; font-weight: 300;
+    }
+
+    .phone-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .phone-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 100px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      font-size: 13px; color: var(--muted);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .phone-pill:hover { border-color: rgba(124,109,250,0.4); color: var(--text); }
+
+    .phone-wrap {
+      position: relative;
+      animation: float 6s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes float {
+      0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)}
+    }
+
+    .phone-glow {
+      position: absolute;
+      width: 520px; height: 700px;
+      background: radial-gradient(ellipse, rgba(124,109,250,0.28) 0%, rgba(192,132,252,0.1) 45%, transparent 70%);
+      bottom: -120px; left: 50%;
+      transform: translateX(-50%);
+      filter: blur(70px); pointer-events: none;
+    }
+
+    .phone-frame {
+      width: 360px;
+      background: linear-gradient(170deg, #1c1c30 0%, #0d0d1c 100%);
+      border-radius: 56px;
+      border: 1.5px solid rgba(255,255,255,0.13);
+      padding: 16px;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.6),
+        0 50px 120px rgba(0,0,0,0.75),
+        0 0 80px rgba(124,109,250,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.09);
+      position: relative; z-index: 2;
+    }
+
+    .phone-btn-right {
+      position: absolute; right: -3px; top: 130px;
+      width: 3px; height: 72px;
+      background: rgba(255,255,255,0.1); border-radius: 0 3px 3px 0;
+    }
+    .phone-btn-left-1 {
+      position: absolute; left: -3px; top: 108px;
+      width: 3px; height: 42px;
+      background: rgba(255,255,255,0.08); border-radius: 3px 0 0 3px;
+    }
+    .phone-btn-left-2 {
+      position: absolute; left: -3px; top: 165px;
+      width: 3px; height: 64px;
+      background: rgba(255,255,255,0.08); border-radius: 3px 0 0 3px;
+    }
+    .phone-btn-left-3 {
+      position: absolute; left: -3px; top: 240px;
+      width: 3px; height: 64px;
+      background: rgba(255,255,255,0.08); border-radius: 3px 0 0 3px;
+    }
+
+    .phone-island {
+      width: 130px; height: 38px; background: #000;
+      border-radius: 0 0 24px 24px;
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .island-cam {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #1a1a28; border: 1.5px solid rgba(255,255,255,0.07);
+    }
+    .island-mic { width: 4px; height: 4px; border-radius: 50%; background: #222; }
+
+    .phone-screen {
+      border-radius: 44px; overflow: hidden;
+      background: #07070f; min-height: 720px;
+    }
+
+    .app-status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 26px 4px;
+    }
+
+    .app-time { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.9); }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+
+    .app-body-wrap { padding: 16px 22px 24px; }
+
+    .app-top-bar {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+    }
+
+    .app-logo-sm {
+      font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .app-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: white;
+    }
+
+    .app-greeting { font-size: 13px; color: rgba(255,255,255,0.38); margin-bottom: 4px; }
+
+    .app-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 18px;
+    }
+
+    .capture-btn {
+      width: 100%; padding: 16px 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 20px; display: flex; align-items: center; gap: 14px;
+      margin-bottom: 22px; box-shadow: 0 8px 30px rgba(124,109,250,0.4);
+    }
+    .capture-btn-icon {
+      width: 42px; height: 42px; border-radius: 14px;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .capture-btn-text { font-size: 16px; font-weight: 600; color: white; }
+    .capture-btn-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); margin-bottom: 12px;
+    }
+
+    .memory-card {
+      background: rgba(124,109,250,0.1);
+      border: 1px solid rgba(124,109,250,0.22);
+      border-radius: 18px; padding: 14px 16px; margin-bottom: 10px;
+    }
+
+    .memory-card-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;
+    }
+
+    .memory-tag {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent2);
+      font-weight: 600; display: flex; align-items: center; gap: 5px;
+    }
+
+    .memory-time { font-size: 10px; color: rgba(255,255,255,0.22); }
+    .memory-text { font-size: 13px; color: rgba(255,255,255,0.82); line-height: 1.5; }
+
+    .memory-card-2 { background: rgba(56,189,248,0.07); border-color: rgba(56,189,248,0.2); }
+    .memory-tag-2 { color: var(--accent3); }
+    .memory-card-3 { background: rgba(245,200,66,0.06); border-color: rgba(245,200,66,0.18); }
+    .memory-tag-3 { color: #f5c842; }
+
+    .ask-bar {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px; padding: 14px 18px;
+      font-size: 13px; color: rgba(255,255,255,0.28);
+      display: flex; align-items: center; gap: 10px; margin-top: 14px;
+    }
+
+    .ask-dot {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 14px rgba(124,109,250,0.5);
+    }
+
+    .app-bottom-nav {
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 14px 20px 22px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(7,7,15,0.95);
+    }
+
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      color: rgba(255,255,255,0.22); font-size: 10px; letter-spacing: 0.04em;
+    }
+    .nav-item.active { color: var(--accent2); }
+    .nav-item-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent2); }
+
+    /* ─── STATS ─── */
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      padding: 0 60px 120px;
+    }
+
+    .stat-item {
+      flex: 1;
+      max-width: 260px;
+      text-align: center;
+      padding: 40px 30px;
+      border: 1px solid var(--border);
+    }
+    .stat-item:first-child { border-radius: 20px 0 0 20px; }
+    .stat-item:last-child { border-radius: 0 20px 20px 0; }
+    .stat-item + .stat-item { border-left: none; }
+
+    .stat-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .stat-label { font-size: 13px; color: var(--muted); }
+
+    /* ─── SECTION HEADERS ─── */
+    .section-header { text-align: center; padding: 0 40px; margin-bottom: 80px; }
+
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+
+    .section-header p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .how-section { padding: 80px 60px 120px; max-width: 1300px; margin: 0 auto; }
+
+    .steps-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 40px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .step-card:first-child { border-radius: 20px 0 0 20px; }
+    .step-card:last-child { border-radius: 0 20px 20px 0; }
+    .step-card:hover { border-color: rgba(124,109,250,0.4); }
+
+    .step-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top, rgba(124,109,250,0.08) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .step-card:hover::before { opacity: 1; }
+
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1;
+      color: rgba(124,109,250,0.10);
+      margin-bottom: 20px;
+      letter-spacing: -0.04em;
+    }
+
+    .step-icon-wrap {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: rgba(124,109,250,0.1);
+      border: 1px solid rgba(124,109,250,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .step-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    .step-tags { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .step-tag {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: rgba(124,109,250,0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(124,109,250,0.2);
+    }
+
+    /* ─── BENTO ─── */
+    .features-section { padding: 80px 60px 120px; max-width: 1300px; margin: 0 auto; }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .bento-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .bento-card:hover { border-color: rgba(124,109,250,0.3); transform: translateY(-3px); }
+
+    .bento-1 { grid-column: span 7; grid-row: span 2; }
+    .bento-2 { grid-column: span 5; }
+    .bento-3 { grid-column: span 5; }
+    .bento-4 { grid-column: span 4; }
+    .bento-5 { grid-column: span 4; }
+    .bento-6 { grid-column: span 4; }
+
+    .bento-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px;
+    }
+
+    .bento-h {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px; font-weight: 700;
+      line-height: 1.2; letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+
+    .bento-p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    .bento-decor {
+      position: absolute;
+      right: -40px; top: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(124,109,250,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .graph-visual { margin-top: 32px; position: relative; height: 200px; }
+
+    svg.graph-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .privacy-visual { margin-top: 28px; display: flex; gap: 10px; }
+
+    .privacy-option {
+      flex: 1;
+      padding: 14px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      transition: border-color 0.2s, background 0.2s;
+      cursor: default;
+    }
+    .privacy-option.active {
+      border-color: rgba(124,109,250,0.4);
+      background: rgba(124,109,250,0.08);
+      color: var(--text);
+    }
+    .privacy-option .pico { margin-bottom: 8px; display: flex; justify-content: center; }
+
+    .chat-preview { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+
+    .chat-msg {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 85%;
+    }
+    .chat-user {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      align-self: flex-end;
+      color: white;
+      border-radius: 16px 16px 4px 16px;
+    }
+    .chat-ai {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 16px 16px 16px 4px;
+    }
+    .chat-source {
+      font-size: 10px;
+      color: var(--accent2);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .speaker-line {
+      font-size: 12px; color: var(--muted);
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      margin-bottom: 6px;
+    }
+    .speaker-line strong { color: white; }
+
+    /* ─── USE CASES ─── */
+    .usecases-section { padding: 80px 60px 120px; max-width: 1300px; margin: 0 auto; }
+
+    .uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+    .uc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: default;
+    }
+    .uc-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+
+    .uc-icon-wrap {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .uc-icon-1 { background: rgba(124,109,250,0.15); }
+    .uc-icon-2 { background: rgba(192,132,252,0.15); }
+    .uc-icon-3 { background: rgba(56,189,248,0.15); }
+    .uc-icon-4 { background: rgba(245,200,66,0.15); }
+
+    .uc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 12px;
+    }
+    .uc-desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+
+    .uc-example {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--accent2);
+      font-style: italic;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* ─── ROADMAP ─── */
+    .roadmap-section { padding: 80px 60px 120px; max-width: 1000px; margin: 0 auto; }
+
+    .roadmap-track { position: relative; padding-left: 40px; }
+    .roadmap-track::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 16px; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2), rgba(124,109,250,0.1));
+    }
+
+    .roadmap-item {
+      position: relative;
+      padding: 32px 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 16px;
+      transition: border-color 0.3s;
+    }
+    .roadmap-item:hover { border-color: rgba(124,109,250,0.3); }
+
+    .roadmap-dot {
+      position: absolute;
+      left: -49px; top: 38px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--accent);
+    }
+    .roadmap-dot.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      box-shadow: 0 0 20px rgba(124,109,250,0.5);
+    }
+    .roadmap-dot.future { border-color: rgba(255,255,255,0.15); }
+
+    .phase-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 8px;
+    }
+    .phase-label.future { color: var(--muted); }
+
+    .phase-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+
+    .phase-items { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .phase-tag {
+      font-size: 12px; padding: 5px 12px;
+      border-radius: 100px;
+      background: rgba(124,109,250,0.1);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(124,109,250,0.2);
+    }
+    .phase-tag.muted {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--border);
+      color: var(--muted);
+    }
+
+    /* ─── PRICING ─── */
+    .pricing-section { padding: 80px 60px 120px; max-width: 1200px; margin: 0 auto; }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      position: relative;
+      transition: transform 0.3s;
+    }
+    .pricing-card.featured {
+      background: linear-gradient(160deg, rgba(124,109,250,0.12), rgba(192,132,252,0.06));
+      border-color: rgba(124,109,250,0.4);
+    }
+    .pricing-card:hover { transform: translateY(-4px); }
+
+    .pricing-badge {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      padding: 5px 14px; border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .pricing-plan { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+
+    .pricing-price {
+      font-family: 'Syne', sans-serif;
+      font-size: 52px; font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px;
+    }
+    .pricing-price .currency { font-size: 24px; vertical-align: super; font-weight: 500; }
+
+    .pricing-per { font-size: 13px; color: var(--muted); margin-bottom: 36px; }
+
+    .pricing-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+
+    .pricing-features { list-style: none; margin-bottom: 36px; }
+    .pricing-features li {
+      font-size: 14px; color: var(--muted);
+      padding: 8px 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .check-icon { color: var(--accent2); flex-shrink: 0; }
+    .cross-icon { color: rgba(255,255,255,0.2); flex-shrink: 0; }
+
+    .pricing-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      text-align: center;
+      padding: 14px; border-radius: 100px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .pricing-btn-featured {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      box-shadow: 0 0 30px rgba(124,109,250,0.3);
+    }
+    .pricing-btn-ghost { border: 1px solid var(--border); color: var(--muted); }
+    .pricing-btn:hover { opacity: 0.8; }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      padding: 80px 60px 160px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-glow {
+      position: absolute;
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(124,109,250,0.2) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(42px, 6vw, 80px);
+      font-weight: 800; letter-spacing: -0.04em;
+      line-height: 1.05; margin-bottom: 28px; position: relative;
+    }
+    .cta-section p {
+      font-size: 18px; color: var(--muted);
+      max-width: 500px; margin: 0 auto 52px;
+      line-height: 1.7; font-weight: 300; position: relative;
+    }
+    .cta-btns { display: flex; gap: 16px; justify-content: center; position: relative; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .footer-logo {
+      font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .footer-tagline { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .footer-note { font-size: 12px; color: rgba(255,255,255,0.2); }
+
+    /* gradient utilities */
+    .gt {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .gt2 {
+      background: linear-gradient(135deg, var(--accent2), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(124,109,250,0.3); border-radius: 3px; }
+
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .hero { padding: 120px 24px 60px; }
+      .stats-row { padding: 0 24px 80px; flex-wrap: wrap; }
+      .stat-item { border-radius: 12px; border: 1px solid var(--border); min-width: 140px; }
+      .stat-item + .stat-item { border-left: 1px solid var(--border); }
+      .how-section,.features-section,.usecases-section,.roadmap-section,.pricing-section,.cta-section { padding: 60px 24px; }
+      .steps-flow { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .step-card { border-radius: 16px !important; }
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-1,.bento-2,.bento-3,.bento-4,.bento-5,.bento-6 { grid-column: span 1; }
+      .uc-grid,.pricing-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; align-items: flex-start; padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/>
+        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/>
+      </svg>
+    </div>
+    Memvel
+  </div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#usecases">Use Cases</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Coming Soon — Early Access Open
+  </div>
+  <h1>
+    Your memory,<br/>
+    <span class="gradient-text">infinitely</span><br/>
+    <span class="thin">extended.</span>
+  </h1>
+  <p class="hero-sub">
+    Record once. Remember forever. Ask anytime.<br/>
+    Memvel captures your conversations, screens, ideas, and files — and lets you recall anything in plain language.
+  </p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      Get Early Access
+    </a>
+    <a href="#how" class="btn-ghost">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      See How It Works
+    </a>
+  </div>
+</section>
+
+<!-- PHONE MOCKUP -->
+<div class="phone-section">
+
+  <div class="phone-aside">
+    <div class="phone-aside-title">One tap.<br/><span class="gt">Everything</span><br/>remembered.</div>
+    <div class="phone-aside-sub">Capture meetings, ideas, screens and videos in seconds. Memvel structures it all and makes it instantly searchable — in plain language.</div>
+    <div class="phone-pills">
+      <div class="phone-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        Audio
+      </div>
+      <div class="phone-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+        Screen
+      </div>
+      <div class="phone-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+        Video
+      </div>
+      <div class="phone-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Docs
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone-glow"></div>
+    <div class="phone-frame">
+      <div class="phone-btn-right"></div>
+      <div class="phone-btn-left-1"></div>
+      <div class="phone-btn-left-2"></div>
+      <div class="phone-btn-left-3"></div>
+      <div class="phone-island">
+        <div class="island-cam"></div>
+        <div class="island-mic"></div>
+      </div>
+      <div class="phone-screen">
+        <div class="app-status-bar">
+          <span class="app-time">9:41</span>
+          <div class="status-icons">
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="rgba(255,255,255,0.8)"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1" opacity="0.35"/></svg>
+            <svg width="15" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="rgba(255,255,255,0.8)"/></svg>
+            <svg width="25" height="13" viewBox="0 0 25 13"><rect x="0" y="1" width="22" height="11" rx="3" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1"/><rect x="22.5" y="4" width="2" height="5" rx="1" fill="rgba(255,255,255,0.4)"/><rect x="1.5" y="2.5" width="16" height="8" rx="2" fill="rgba(255,255,255,0.9)"/></svg>
+          </div>
+        </div>
+
+        <div class="app-body-wrap">
+          <div class="app-top-bar">
+            <span class="app-logo-sm">Memvel</span>
+            <div class="app-avatar">A</div>
+          </div>
+          <div class="app-greeting">Good morning, Alex</div>
+          <div class="app-title">Your Memories</div>
+
+          <div class="capture-btn">
+            <div class="capture-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            </div>
+            <div>
+              <div class="capture-btn-text">Capture Now</div>
+              <div class="capture-btn-sub">Tap to start recording</div>
+            </div>
+          </div>
+
+          <div class="section-label">Recent Memories</div>
+
+          <div class="memory-card">
+            <div class="memory-card-header">
+              <div class="memory-tag">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                Meeting
+              </div>
+              <span class="memory-time">2h ago</span>
+            </div>
+            <div class="memory-text">Ali confirmed Q2 budget at $45k. Follow-up call scheduled for Friday.</div>
+          </div>
+
+          <div class="memory-card memory-card-2">
+            <div class="memory-card-header">
+              <div class="memory-tag memory-tag-2">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Idea
+              </div>
+              <span class="memory-time">Yesterday</span>
+            </div>
+            <div class="memory-text">Mobile-first onboarding with gesture navigation — revisit for v2.</div>
+          </div>
+
+          <div class="memory-card memory-card-3">
+            <div class="memory-card-header">
+              <div class="memory-tag memory-tag-3">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+                Screenshot
+              </div>
+              <span class="memory-time">2 days ago</span>
+            </div>
+            <div class="memory-text">Dashboard spacing reference — saved from Figma file review.</div>
+          </div>
+
+          <div class="ask-bar">
+            <div class="ask-dot">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </div>
+            Ask anything about your past…
+          </div>
+        </div>
+
+        <div class="app-bottom-nav">
+          <div class="nav-item active">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="nav-item-dot"></div>
+          </div>
+          <div class="nav-item">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Ask
+          </div>
+          <div class="nav-item">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+            Graph
+          </div>
+          <div class="nav-item">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+            Profile
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-item">
+    <div class="stat-number">∞</div>
+    <div class="stat-label">Memory, no limit</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">5+</div>
+    <div class="stat-label">Capture modalities</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">0</div>
+    <div class="stat-label">Data sold, ever</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">1</div>
+    <div class="stat-label">Tap to capture</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-header">
+    <span class="section-eyebrow">The Flow</span>
+    <h2>How it <span class="gt">works</span></h2>
+    <p>Four simple stages that transform everything you experience into a searchable, connected memory system.</p>
+  </div>
+  <div class="steps-flow">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+      </div>
+      <div class="step-title">Capture</div>
+      <div class="step-desc">One tap records anything — conversations, ideas, screenshots, videos, documents. No friction, just capture.</div>
+      <div class="step-tags">
+        <span class="step-tag">Audio</span>
+        <span class="step-tag">Screen</span>
+        <span class="step-tag">Video</span>
+        <span class="step-tag">Docs</span>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="step-title">Understand</div>
+      <div class="step-desc">AI transcribes, identifies speakers, extracts text, detects tasks, and generates summaries — automatically.</div>
+      <div class="step-tags">
+        <span class="step-tag">Transcription</span>
+        <span class="step-tag">OCR</span>
+        <span class="step-tag">Summaries</span>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+      </div>
+      <div class="step-title">Connect</div>
+      <div class="step-desc">Builds your personal knowledge graph — linking people, topics, projects, and ideas across time.</div>
+      <div class="step-tags">
+        <span class="step-tag">Knowledge Graph</span>
+        <span class="step-tag">Relationships</span>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <div class="step-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="step-title">Recall</div>
+      <div class="step-desc">Ask in plain language. Get answers backed by your own memories, with source links to the original moment.</div>
+      <div class="step-tags">
+        <span class="step-tag">Natural Language</span>
+        <span class="step-tag">Source-backed</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENTO FEATURES -->
+<section class="features-section" id="features">
+  <div class="section-header">
+    <span class="section-eyebrow">Capabilities</span>
+    <h2>Not a note app.<br/><span class="gt2">A memory system.</span></h2>
+    <p>Every feature is designed around one goal: making your past instantly accessible.</p>
+  </div>
+
+  <div class="bento-grid">
+
+    <!-- Knowledge Graph -->
+    <div class="bento-card bento-1">
+      <div class="bento-decor"></div>
+      <div class="bento-eyebrow">Core Differentiator</div>
+      <div class="bento-h">Personal Knowledge Graph</div>
+      <div class="bento-p">Memvel doesn't just store your information — it maps how everything connects. People, conversations, ideas, tasks, and files form an intelligent web that grows smarter over time.</div>
+      <div class="graph-visual">
+        <svg class="graph-svg" viewBox="0 0 460 200">
+          <defs>
+            <radialGradient id="ng" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#7c6dfa" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#7c6dfa" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="pg" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#7c6dfa"/>
+              <stop offset="100%" stop-color="#c084fc"/>
+            </radialGradient>
+          </defs>
+          <circle cx="230" cy="100" r="60" fill="url(#ng)"/>
+          <line x1="230" y1="100" x2="95" y2="25" stroke="rgba(124,109,250,0.25)" stroke-width="1"/>
+          <line x1="230" y1="100" x2="340" y2="22" stroke="rgba(192,132,252,0.25)" stroke-width="1"/>
+          <line x1="230" y1="100" x2="60" y2="145" stroke="rgba(56,189,248,0.25)" stroke-width="1"/>
+          <line x1="230" y1="100" x2="370" y2="158" stroke="rgba(124,109,250,0.25)" stroke-width="1"/>
+          <line x1="230" y1="100" x2="30" y2="82" stroke="rgba(192,132,252,0.2)" stroke-width="1"/>
+          <line x1="230" y1="100" x2="420" y2="82" stroke="rgba(56,189,248,0.2)" stroke-width="1"/>
+          <!-- Center node -->
+          <circle cx="230" cy="100" r="28" fill="url(#pg)" opacity="0.9"/>
+          <!-- M letter for Memvel -->
+          <text x="230" y="106" text-anchor="middle" font-family="Syne,sans-serif" font-size="14" font-weight="800" fill="white">M</text>
+          <!-- Outer nodes -->
+          <circle cx="95" cy="25" r="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <!-- mic icon approx -->
+          <rect x="91" y="18" width="8" height="10" rx="4" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+          <path d="M88 27 a7 7 0 0 0 14 0" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+          <line x1="95" x2="95" y1="34" y2="37" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+
+          <circle cx="340" cy="22" r="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <!-- user icon -->
+          <circle cx="340" cy="18" r="4" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+          <path d="M332 30 a8 8 0 0 1 16 0" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+
+          <circle cx="60" cy="145" r="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <!-- folder icon -->
+          <path d="M53 141 h14 v10 h-14 z" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+          <path d="M53 141 l3-3 h4 l2 3" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+
+          <circle cx="370" cy="158" r="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <!-- lightbulb icon -->
+          <path d="M370 150 a5 5 0 0 1 5 5 c0 2-1 3-2 4 h-6 c-1-1-2-2-2-4 a5 5 0 0 1 5-5z" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+          <line x1="367" x2="373" y1="163" y2="163" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+
+          <circle cx="30" cy="82" r="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <!-- check -->
+          <polyline points="24,82 28,86 36,78" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+
+          <circle cx="420" cy="82" r="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <!-- calendar -->
+          <rect x="413" y="76" width="14" height="12" rx="1.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+          <line x1="413" x2="427" y1="80" y2="80" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+          <line x1="417" x2="417" y1="74" y2="78" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+          <line x1="423" x2="423" y1="74" y2="78" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="bento-card bento-2">
+      <div class="bento-eyebrow">Privacy First</div>
+      <div class="bento-h">Your data, your rules</div>
+      <div class="bento-p">Choose where your memories live. No AI training on your data. Ever.</div>
+      <div class="privacy-visual">
+        <div class="privacy-option active">
+          <div class="pico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          </div>
+          Cloud<br/>Encrypted
+        </div>
+        <div class="privacy-option">
+          <div class="pico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>
+          </div>
+          Local<br/>Only
+        </div>
+        <div class="privacy-option">
+          <div class="pico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          Your<br/>Storage
+        </div>
+      </div>
+    </div>
+
+    <!-- Recall -->
+    <div class="bento-card bento-3">
+      <div class="bento-eyebrow">Natural Recall</div>
+      <div class="bento-h">Ask like you think</div>
+      <div class="chat-preview">
+        <div class="chat-msg chat-user">What did Ali say about pricing last week?</div>
+        <div>
+          <div class="chat-msg chat-ai">Ali mentioned a 15% discount for annual plans during your Tuesday call. He also flagged enterprise pricing needs review.</div>
+          <div class="chat-source">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            From: Meeting · Tue Nov 12, 2:30 PM
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multimodal -->
+    <div class="bento-card bento-4">
+      <div class="bento-eyebrow">Multimodal</div>
+      <div class="bento-h">Capture anything</div>
+      <div class="bento-p">Audio · Screen · Video · Docs · Ideas. One tap, every format.</div>
+      <div style="margin-top:20px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f5c842" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      </div>
+    </div>
+
+    <!-- Proactive -->
+    <div class="bento-card bento-5">
+      <div class="bento-eyebrow">Proactive AI</div>
+      <div class="bento-h">It remembers for you</div>
+      <div class="bento-p">Surfaces related memories before you think to ask.</div>
+      <div style="margin-top:20px;background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);border-radius:12px;padding:12px 14px;font-size:12px;color:rgba(245,200,66,0.9);display:flex;align-items:flex-start;gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,200,66,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        You discussed this topic 3 weeks ago — want a recap?
+      </div>
+    </div>
+
+    <!-- Speaker ID -->
+    <div class="bento-card bento-6">
+      <div class="bento-eyebrow">Speaker ID</div>
+      <div class="bento-h">Who said what</div>
+      <div class="bento-p">Automatically identifies and attributes speakers in recordings.</div>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:6px;">
+        <div class="speaker-line" style="border-left:2px solid var(--accent)"><strong>Ali:</strong> "We should go with the premium tier."</div>
+        <div class="speaker-line" style="border-left:2px solid var(--accent2)"><strong>You:</strong> "Agreed. I'll send the proposal."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="usecases-section" id="usecases">
+  <div class="section-header">
+    <span class="section-eyebrow">Real Life</span>
+    <h2>What you'll<br/><span class="gt">actually use it for</span></h2>
+    <p>Memvel fits into your day — meetings, ideas, work, learning — without changing how you work.</p>
+  </div>
+  <div class="uc-grid">
+    <div class="uc-card">
+      <div class="uc-icon-wrap uc-icon-1">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+      <div class="uc-title">Remember Every Meeting</div>
+      <div class="uc-desc">Record conversations, identify who said what, and automatically surface action items. Never lose an agreement or a decision again.</div>
+      <div class="uc-example">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        What did we agree with Ali about the Q2 budget?
+      </div>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon-wrap uc-icon-2">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <div class="uc-title">Capture Every Idea</div>
+      <div class="uc-desc">Voice notes, whiteboard photos, brainstorming sessions — AI structures them, tags them, and resurfaces them when relevant.</div>
+      <div class="uc-example">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Show me all mobile feature ideas from last month
+      </div>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon-wrap uc-icon-3">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+      </div>
+      <div class="uc-title">Track Your Work Context</div>
+      <div class="uc-desc">Screenshot what you're working on. Find any past state — error messages, designs, documents — with a simple question.</div>
+      <div class="uc-example">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        What was I working on when I saw that database error?
+      </div>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon-wrap uc-icon-4">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f5c842" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/></svg>
+      </div>
+      <div class="uc-title">Understand Videos Instantly</div>
+      <div class="uc-desc">Upload recordings or presentations. AI finds key moments, creates summaries, and lets you jump to any timestamp with a question.</div>
+      <div class="uc-example">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Find where the speaker explains the pricing model
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="roadmap-section">
+  <div class="section-header">
+    <span class="section-eyebrow">What's Coming</span>
+    <h2>The <span class="gt">Roadmap</span></h2>
+    <p>We're building Memvel in phases, prioritizing the most impactful features first.</p>
+  </div>
+  <div class="roadmap-track">
+    <div class="roadmap-item">
+      <div class="roadmap-dot active"></div>
+      <div class="phase-label">Phase 1 — MVP · Now</div>
+      <div class="phase-title">Core Memory</div>
+      <div class="phase-items">
+        <span class="phase-tag">Audio Capture</span>
+        <span class="phase-tag">Transcription</span>
+        <span class="phase-tag">Screenshot + OCR</span>
+        <span class="phase-tag">AI Summaries</span>
+        <span class="phase-tag">Basic Recall</span>
+        <span class="phase-tag">Local Storage</span>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot"></div>
+      <div class="phase-label future">Phase 2 — Q3 2025</div>
+      <div class="phase-title">Intelligence Layer</div>
+      <div class="phase-items">
+        <span class="phase-tag muted">Video Understanding</span>
+        <span class="phase-tag muted">Knowledge Graph</span>
+        <span class="phase-tag muted">Calendar Integration</span>
+        <span class="phase-tag muted">Notion / Todoist</span>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-dot future"></div>
+      <div class="phase-label future">Phase 3 — Q1 2026</div>
+      <div class="phase-title">Always-On Intelligence</div>
+      <div class="phase-items">
+        <span class="phase-tag muted">Cross-Device Sync</span>
+        <span class="phase-tag muted">Proactive Reminders</span>
+        <span class="phase-tag muted">Personal Fine-Tuned AI</span>
+        <span class="phase-tag muted">Team Memory</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="section-header">
+    <span class="section-eyebrow">Pricing</span>
+    <h2>Simple, <span class="gt">honest</span> pricing</h2>
+    <p>No hidden fees. No lock-in. Your data is always yours, on every plan.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-plan">Free</div>
+      <div class="pricing-price"><span class="currency">$</span>0</div>
+      <div class="pricing-per">forever</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> 50 captures / month</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Basic recall</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Audio + screenshots</li>
+        <li><span class="cross-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></span> Knowledge graph</li>
+        <li><span class="cross-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></span> Video understanding</li>
+        <li><span class="cross-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></span> Local-only mode</li>
+      </ul>
+      <a href="#" class="pricing-btn pricing-btn-ghost">
+        Get Started
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Most Popular</div>
+      <div class="pricing-plan">Pro</div>
+      <div class="pricing-price"><span class="currency">$</span>12</div>
+      <div class="pricing-per">per month, billed annually</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Unlimited captures</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Advanced AI recall</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> All modalities</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Knowledge graph</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Video understanding</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Local-only option</li>
+      </ul>
+      <a href="#" class="pricing-btn pricing-btn-featured">
+        Start Free Trial
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-plan">Lifetime</div>
+      <div class="pricing-price"><span class="currency">$</span>249</div>
+      <div class="pricing-per">one-time · local-only</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Pro</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Local storage only</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> No subscription ever</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Maximum privacy</li>
+        <li><span class="check-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Priority support</li>
+        <li><span class="cross-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg></span> Cloud sync</li>
+      </ul>
+      <a href="#" class="pricing-btn pricing-btn-ghost">
+        Buy Lifetime
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="waitlist">
+  <div class="cta-glow"></div>
+  <h2>Your memory<br/><span class="gt">starts now.</span></h2>
+  <p>Join thousands of early users building their second brain. Free to start. Private by design.</p>
+  <div class="cta-btns">
+    <a href="#" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      Join the Waitlist
+    </a>
+    <a href="#how" class="btn-ghost">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Learn More
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">
+      <div class="nav-logo-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.44-4.14Z"/>
+          <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.44-4.14Z"/>
+        </svg>
+      </div>
+      Memvel
+    </div>
+    <div class="footer-tagline">Record once. Remember forever. Ask anytime.</div>
+  </div>
+  <div class="footer-note">This is not a note app. It's a memory system for modern life.</div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) {
+        el.target.style.opacity = '1';
+        el.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.step-card, .bento-card, .uc-card, .roadmap-item, .pricing-card').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(28px)';
+    el.style.transition = `opacity 0.6s ${i * 0.07}s ease, transform 0.6s ${i * 0.07}s ease, border-color 0.3s, background 0.3s`;
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
